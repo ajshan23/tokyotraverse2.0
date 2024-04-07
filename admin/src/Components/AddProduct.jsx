@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import upload_area from "../assets/upload_area.svg";
-import {PacmanLoader} from "react-spinners"
+import { PacmanLoader } from "react-spinners";
+import axios from "axios";
 const AddProduct = () => {
   const [image, setImage] = useState(false);
   const [animate, setAnimate] = useState(false);
@@ -25,7 +26,7 @@ const AddProduct = () => {
         product.category,
         product.price,
         product.product_code,
-      ].some((elem) => elem.trim() === "")
+      ].some((field) => field.trim() === "")
     ) {
       alert("all fields are required");
       return null;
@@ -34,8 +35,10 @@ const AddProduct = () => {
       alert("image required");
       return null;
     }
-    console.log(product);
-
+    if (image.type !== "image/png") {
+      alert("choose png image only");
+      return null;
+    }
     let responseData;
     setAnimate(true);
     let formData = new FormData();
@@ -45,16 +48,36 @@ const AddProduct = () => {
     formData.append("category", product.category);
     formData.append("name", product.name);
 
-    await fetch("http://localhost:4000/api/v1/admin/addproduct", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => (responseData = data))
-      .catch((err) => alert("product code must be unique"));
+    await axios
+      .post("http://localhost:5000/api/v1/admin/addproduct", formData)
+      .then((response) => {
+        responseData = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+        if (error.response.status === 400) {
+          alert("product allready exists on this product code");
+          setAnimate(false);
+          setProduct({
+            name: "",
+            category: "naruto",
+            price: "",
+            product_code: "",
+          });
+          return null;
+        }
+        if (error.response.status === 401) {
+          alert("product creation failed");
+          setAnimate(false);
+          setProduct({
+            name: "",
+            category: "naruto",
+            price: "",
+            product_code: "",
+          });
+          return null;
+        }
+      });
     setAnimate(false);
     setProduct({
       name: "",
@@ -62,11 +85,9 @@ const AddProduct = () => {
       price: "",
       product_code: "",
     });
-    if (!responseData.success) {
-      alert("product creation failed,product code must be unique");
-      return null;
+    if (responseData.success) {
+      alert("product added successfully");
     }
-    alert("product added successfully");
   };
   return (
     <div className=" h-screen w-full flex justify-center items-start p-10 bg-slate-300 overflow-y-scroll">
@@ -79,41 +100,41 @@ const AddProduct = () => {
               <div className="itemfield">
                 <p>Product Title</p>
                 <div className="border-[#7b7b7b] border-2 px-4 w-fit py-1.5 rounded-md  ">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Type here"
-                  value={product.name}
-                  onChange={changeHandler}
-                  className="h-full w-full border-none outline-none"
-                />
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Type here"
+                    value={product.name}
+                    onChange={changeHandler}
+                    className="h-full w-full border-none outline-none"
+                  />
                 </div>
               </div>
               <div className="flex flex-row gap-5">
                 <div className="itemfield">
                   <p>Price</p>
                   <div className="border-[#7b7b7b] border-2 px-4 w-fit py-1.5 rounded-md  ">
-                  <input
-                    type="number"
-                    name="price"
-                    placeholder="Type here"
-                    value={product.price}
-                    onChange={changeHandler}
-                    className="h-full w-full border-none outline-none"
-                  />
+                    <input
+                      type="number"
+                      name="price"
+                      placeholder="Type here"
+                      value={product.price}
+                      onChange={changeHandler}
+                      className="h-full w-full border-none outline-none"
+                    />
                   </div>
                 </div>
                 <div className="itemfield">
                   <p>Product Code</p>
                   <div className="border-[#7b7b7b] border-2 px-4 w-fit py-1.5 rounded-md  ">
-                  <input
-                    type="number"
-                    name="product_code"
-                    placeholder="Type here"
-                    value={product.product_code}
-                    onChange={changeHandler}
-                    className="h-full w-full border-none outline-none"
-                  />
+                    <input
+                      type="number"
+                      name="product_code"
+                      placeholder="Type here"
+                      value={product.product_code}
+                      onChange={changeHandler}
+                      className="h-full w-full border-none outline-none"
+                    />
                   </div>
                 </div>
               </div>
