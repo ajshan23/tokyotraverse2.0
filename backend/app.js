@@ -12,7 +12,7 @@ const app=express()
 
 
 app.use(cors({
-    origin:"http://localhost:5173"
+    origin:["http://localhost:5173","http://localhost:5174","192.168.29.227:5173","http://192.168.29.227:5173/"]
 }))
 
 

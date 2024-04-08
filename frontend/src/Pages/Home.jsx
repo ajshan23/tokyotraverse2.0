@@ -9,9 +9,9 @@ const Home = () => {
     <div>
       <MainSearch/>
       <CategorySection/>
-      <ListSelectedProducts/>
-      <ListSelectedProducts/>
-      <ListSelectedProducts/>
+      <ListSelectedProducts type="featured" heading="FEATURED PRODUCTS" />
+      <ListSelectedProducts type="latest" heading="LATEST ARRIVALS"/>
+      <ListSelectedProducts type="fandom" heading="SHOP BY FANDOME"/>
       <Offeres />
     </div>
   )

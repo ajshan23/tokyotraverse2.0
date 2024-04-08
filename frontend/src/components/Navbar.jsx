@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { FaHeart, FaList, FaShoppingBag } from "react-icons/fa"
 import { ImCross } from "react-icons/im";
+import { Link } from 'react-router-dom';
+import { HashLink as HLink } from 'react-router-hash-link';
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -15,11 +17,12 @@ const Navbar = () => {
         </div>
         <div className='flex gap-20 items-center'>
             <ul className='list-none hidden lg:flex gap-5'>
-                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>Home</li>
-                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>Products</li>
-                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>Orders</li>
-                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>About</li>
-                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>Contact</li>
+              
+                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'><Link to="/">Home</Link></li>
+                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'><Link to="/allproducts">Products</Link></li>
+                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'><Link to="/orders">Orders</Link></li>
+                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'><Link to="/about">About</Link></li>
+                <li className='hover:text-red-600 active:text-red-600 cursor-pointer'><HLink to="#contact" smooth>Contact</HLink></li>
                 <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>ENG</li>
             </ul>
             <div className='flex justify-center items-center gap-1 lg:gap-5'>
