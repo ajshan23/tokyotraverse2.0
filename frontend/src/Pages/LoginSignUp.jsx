@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import bgimage from "../assets/login.png";
 import avatar from "../assets/login2.png";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ClipLoader } from "react-spinners";
 import bg from "../assets/avatarback.png";
+import axios from "axios"
 const LoginSignUp = () => {
   const [login, setLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -13,6 +13,7 @@ const LoginSignUp = () => {
   const [password, setPassword] = useState("");
   const [cpass, setCpass] = useState("");
   const navigate = useNavigate();
+  axios.defaults.withCredentials=true;
   const handleSubmit = () => {
     login ? handleLogin() : handleSignup();
   };
@@ -23,17 +24,12 @@ const LoginSignUp = () => {
     }
     let responseData;
     setLoading(true);
-    await fetch("/api/v1/users/login", {
-      method: "POST",
-      headers: {
-        Accept: "application/form-data",
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify({ password: password, email: email }),
-    })
-      .then((res) => res.json())
-      .then((data) => (responseData = data))
+    
+    await axios.post("http://localhost:5000/api/v1/users/login",{ password: password, email: email })
+      .then((response) =>{
+        // console.log(response.data);
+        (responseData = response.data)
+      })
       .catch((err) => {
         alert("Wrong email or password");
         setLoading(false);
@@ -42,9 +38,10 @@ const LoginSignUp = () => {
 
     if (responseData.success) {
       console.log(responseData);
-      localStorage.setItem("auth-token", responseData.data.accessToken);
+      localStorage.setItem("accessToken", responseData.data.accessToken);
 
-      window.location.replace("/");
+      // window.location.replace("/");
+      navigate("/")
     } else {
       if (responseData.statusCode === 400) {
         toast.error("wrong email or password");
@@ -71,22 +68,12 @@ const LoginSignUp = () => {
     }
     let responseData;
     setLoading(true);
-    await fetch("/api/v1/users/register", {
-      method: "POST",
-      headers: {
-        Accept: "application/form-data",
-        "Content-Type": "application/json",
-      },
-      withCredntials: true,
-      credentials: "include",
-      body: JSON.stringify({
-        username: username,
-        password: password,
-        email: email,
-      }),
+    await axios.post("http://localhost:5000/api/v1/users/register",{
+      username: username,
+      password: password,
+      email: email,
     })
-      .then((res) => res.json())
-      .then((data) => (responseData = data))
+      .then((response) => (responseData = response.data))
       .catch((err) => {
         if (err.statuscode === 409) {
           alert("username or password already exists");
@@ -97,9 +84,10 @@ const LoginSignUp = () => {
     setLoading(false);
     if (responseData.success) {
       console.log(responseData);
-      localStorage.setItem("auth-token", responseData.data.accessToken);
+      localStorage.setItem("accessToken", responseData.data.accessToken);
 
-      window.location.replace("/");
+      // window.location.replace("/");
+      navigate("/")
     } else {
       alert(responseData.error);
     }
@@ -109,7 +97,7 @@ const LoginSignUp = () => {
     setUsername("");
   };
   useEffect(() => {
-    let check = localStorage.getItem("auth-token");
+    let check = localStorage.getItem("accessToken");
     if (check) {
       navigate("/");
     }

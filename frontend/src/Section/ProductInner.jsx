@@ -1,14 +1,83 @@
-import React, { useState } from "react";
-import tshirt from "../assets/tshirt.png";
+import React, { useEffect, useState } from "react";
+import { FcLike } from "react-icons/fc";
 import { FaStar } from "react-icons/fa";
+import { CiHeart } from "react-icons/ci"
+import toast from "react-hot-toast";
+import axios from "axios"
+import {loadCart} from "../features/ecomSlice.js"
+import {useNavigate} from "react-router-dom"
+import {useDispatch} from "react-redux"
 const ProductInner = ({product}) => {
+
     const [quantity,setQuanitiy]=useState(1)
+    const [liked,setLiked]=useState(false)
+    const navigate=useNavigate()
+    const dispatch=useDispatch()
+    axios.defaults.withCredentials=true;
     const handleIncrease=()=>{
         quantity<5 &&setQuanitiy(quantity+1)
     }
     const handleDecrease=()=>{
         quantity>1 &&setQuanitiy(quantity-1)
     }
+
+    const handleSubmit=async()=>{
+      
+      if (!localStorage.getItem("accessToken")) {
+        navigate("/login")
+        return
+      }
+      await axios.post("http://localhost:5000/api/v1/users/createcart",{
+        
+        productId:product._id,
+        quantity:quantity
+       }).catch((err)=>console.log(err))
+       await axios.post("http://localhost:5000/api/v1/users/loadcart")
+        .then((response) => dispatch(loadCart(response.data.data)))
+        .catch((err) => console.log(err));
+      toast.success("added to cart")
+      setQuanitiy(1)
+    }
+
+    const handleLike=async()=>{
+      if (liked) {
+        await axios.post("http://localhost:5000/api/v1/users/removefromwhishlist",{
+          productId:product._id
+        },{withCredentials:true}).then((response)=>{
+          if (response.data.success===true) {
+            setLiked(false)
+          }else{
+            console.log("conceptual error at removing like");
+          }
+        })
+      } else {
+        await axios.post("http://localhost:5000/api/v1/users/addtowhishlist",{
+          productId:product._id
+        },{withCredentials:true}
+      ).then((response)=>{
+          if (response.data.success===true) {
+            setLiked(true)
+          }else{
+            console.log("conceptual error at adding like");
+          }
+        })
+      }
+    }
+    const likedOrNot=async()=>{{
+      await axios.post("http://localhost:5000/api/v1/users/checkinwhishlist",{
+        productId:product._id
+      },{withCredentials:true}).then((response)=>{
+        if (response.data.success===true) {
+          setLiked(true)
+        }
+      })
+    }}
+    useEffect(()=>{
+      likedOrNot()
+      setLiked(false)
+      
+    },[product._id])
+
   return (
     <div className="flex w-full h-full justify-center items-center px-3 md:px-[120px]">
       <div className="flex w-full  flex-col md:flex-row border-red-600 border-b md:border-b-2 py-3 md:py-10 ">
@@ -56,8 +125,13 @@ const ProductInner = ({product}) => {
             </div>
 
             <div className="flex justify-start items-center w-full  md:items-start">
-                    <div className="text-red-600 px-10 py-4 border-2 border-red-600 rounded-sm active:bg-red-600 active:text-white cursor-pointer transition-all ease-in-out">
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-5">
+                    <div className="text-red-600 px-10 py-4 border-2 border-red-600 rounded-sm active:bg-red-600 active:text-white cursor-pointer transition-all ease-in-out" onClick={handleSubmit}>
                         Add To Bag
+                    </div>
+                    <div className="cursor-pointer" onClick={handleLike}> 
+                      {liked? <FcLike size={30}/>:<CiHeart size={30} color="red"/>}
+                    </div>
                     </div>
             </div>
         </div>

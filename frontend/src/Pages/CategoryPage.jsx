@@ -1,9 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Showcard from "../components/ShowCard/Showcard";
 import bg from "../assets/avatarback.png";
 import { FaSearch } from "react-icons/fa";
 import pic from "../assets/naruto.png";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 const CategoryPage = (props) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const getProducts = async () => {
+    setLoading(true);
+    await axios
+      .post("http://localhost:5000/api/v1/users/category", {
+        category: props.tag,
+      })
+      .then((response) => {
+        setProducts(response.data.products);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  };
+  useEffect(() => {
+    getProducts();
+  }, []);
   return (
     <div>
       <div
@@ -18,14 +41,15 @@ const CategoryPage = (props) => {
           <div className=" w-full h-full pl-6 pr-2 md:pr-2 md:pl-8 md:px-[120px] pb-6 flex flex-row gap-10 md:gap-0 font-lexend text-sm md:text-4xl font-bold text-white">
             <div className=" bg-yellow- flex justify-center  w-full ">
               <img
-                src={pic}
+                src={props.img}
                 alt=""
-                className="w-28 md:w-60 h-auto pt-4  md:pt-0  "
+                className=" w-28 md:w-60 h-auto pt-4  md:pt-0  "
               />
             </div>
             <div className=" flex flex-col pt-5 justify-center">
               <div className="font-mono pt-1 md:pt-3 font-bold uppercase">
-              Naruto is a Japanese manga series written and illustrated by Masashi Kishimoto. It tells the story of Naruto Uzumaki
+                Naruto is a Japanese manga series written and illustrated by
+                Masashi Kishimoto. It tells the story of Naruto Uzumaki
               </div>
             </div>
           </div>
@@ -53,43 +77,27 @@ const CategoryPage = (props) => {
           </select>
         </div>
         <div className="w-full text-end text-xsm3 md:text-base md:px-24 font-serif">
-          25 items of 999
+          {products.length} items 
         </div>
 
         <div className="flex  justify-center">
-          <div className=" border-y md:border-y-2 w-full py-2  md:py-6 border-red-600 grid grid-cols-3 md:grid-cols-4 place-content-center gap-2 md:gap-12 ">
-            {Array(
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              98,
-              7654,
-              35,
-              434,
-              354,
-              343,
-              43,
-              4,
-              343,
-              43,
-              43,
-              4,
-              3234,
-              32343,
-              2343,
-              3
-            ).map((ele, i) => (
-              <div key={i}>
-                <Showcard />{" "}
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <ClipLoader size={30} color="red" />
+          ) : (
+            <div className=" border-y md:border-y-2 w-full py-2  md:py-6 border-red-600 grid grid-cols-3 md:grid-cols-4 place-content-center gap-2 md:gap-12 ">
+              {products &&
+                products.map((product, i) => (
+                  <div key={i}>
+                    <Link
+                      to={`/product/${product.productcode}`}
+                      state={product}
+                    >
+                      <Showcard product={product} />
+                    </Link>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

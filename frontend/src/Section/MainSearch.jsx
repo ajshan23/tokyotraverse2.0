@@ -12,7 +12,7 @@ const MainSearch = () => {
                 <div className='hidden md:flex'><FaSearch size={20}/></div>
             
             </div>
-            <div className='text-xsm4 w-36 md:w-[60%] md:text-5xl '>UNLOCK YOUR OTAKU PASSION WITH EXCLUSIVE MERCHANIDISE </div>
+            <div className='text-xsm4 w-36 md:w-[60%] md:text-5xl z-10'>UNLOCK YOUR OTAKU PASSION WITH EXCLUSIVE MERCHANIDISE </div>
             <div className='text-xsm3 px-2 py-1 bg-white text-red-600 w-fit md:text-xl md:px-4 md:py-2'>EXPLORE</div>
         </div>
         <div className='absolute right-0 md:right-20 bottom-0'><img src={pic} alt="" className='w-60 md:w-[650px]' /></div>

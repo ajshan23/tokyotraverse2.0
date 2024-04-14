@@ -7,6 +7,7 @@ import aot from "../assets/aot.png"
 import demonslayer from "../assets/demonslayer.png"
 import dragonballz from "../assets/dragonballz.png"
 import onepiece from "../assets/onepiece.png"
+import { Link } from 'react-router-dom'
 const CategorySection = () => {
   const data=[
     {
@@ -34,11 +35,11 @@ const CategorySection = () => {
 
         <div className=' border-y md:border-y-2 w-full py-2 md:py-6 border-red-600 flex gap-2 md:gap-12 overflow-scroll element-class justify-center'>
             {
-                data.map((d,i)=><div key={i} className='border md:border-2 border-red-600 rounded-lg flex justify-center items-center'>
+                data.map((d,i)=><Link to={`${d.name}`} key={i}><div  className='border md:border-2 border-red-600 rounded-lg flex justify-center items-center'>
                  
-                        <img src={d.image} alt="" className='image w-52 h-auto hover:scale-110 bg-blend-screen '/>
-                
-                     </div>)
+                <img src={d.image} alt="" className='image w-52 h-auto hover:scale-110 bg-blend-screen '/>
+        
+             </div></Link>)
             }
 
         </div>

@@ -1,3 +1,4 @@
+import { WhishList } from "../models/WhishList.model.js";
 import { Product } from "../models/product.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -175,7 +176,6 @@ const getRelated = asyncHandler(async (req, res) => {
   if (!products) {
     throw new ApiError(400, `no items found on the category: ${category}`);
   }
-
   return res.status(201).json({
     products: products,
   });
@@ -217,6 +217,8 @@ const getfeatured = asyncHandler(async (req, res) => {
   });
 });
 
+
+
 export {
   createProduct,
   getAllProducts,
@@ -226,5 +228,5 @@ export {
   searchProducts,
   getRelated,
   getFandom,
-  getfeatured,
+  getfeatured
 };

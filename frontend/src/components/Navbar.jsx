@@ -1,14 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaHeart, FaList, FaShoppingBag } from "react-icons/fa"
 import { ImCross } from "react-icons/im";
 import { Link } from 'react-router-dom';
 import { HashLink as HLink } from 'react-router-hash-link';
+import {useDispatch, useSelector} from "react-redux"
+import { loadCart } from '../features/ecomSlice';
+import axios from "axios"
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
 
+  axios.defaults.withCredentials=true;
+    const [isOpen, setIsOpen] = useState(false);
+    const cardData=useSelector(state=>state.cart)
+    const isLogined =localStorage.getItem("accessToken")
+    const dispatch=useDispatch()
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const fetchCart = async () => {
+    await axios
+      .post("http://localhost:5000/api/v1/users/loadcart")
+      .then((response) => {
+        dispatch(loadCart(response.data.data));
+        
+      })
+      .catch((err) => {
+        toast.error("Error occured, please refresh the page");
+        console.log(err);
+      });
+  };
+  useEffect(()=>{
+    
+    if (isLogined) {
+      fetchCart()
+    }
+   
+  },[])
   return (
     <div className='flex w-full h-16 lg:h-20 items-center justify-between px-3 lg:px-[120px] font-lexend '>
         <div className='text-lg lg:text-2xl font-semibold flex'>
@@ -26,9 +53,9 @@ const Navbar = () => {
                 <li className='hover:text-red-600 active:text-red-600 cursor-pointer'>ENG</li>
             </ul>
             <div className='flex justify-center items-center gap-1 lg:gap-5'>
-                <div><FaHeart/></div>
-                <div><FaShoppingBag/></div>
-                <div className='px-2 py-1 lg:px-7 lg:py-2 border-red-600 border-2 rounded-full'><button>Login</button></div>
+                <div><Link to="/whishlist"><FaHeart/></Link></div>
+                <div className='flex relative'><Link to="/cart"><FaShoppingBag/><div className='absolute px-0.5 -top-2 -right-1 text-xs rounded-full text-white bg-red-600'>{cardData? cardData.length :"0"}</div></Link></div>
+                <div className='px-2 py-1 lg:px-7 lg:py-2 border-red-600 border-2 rounded-full'><button><Link to="/login">{isLogined?"Logout":"Login"}</Link></button></div>
             </div>
         </div>
         <div className='flex md:hidden' onClick={toggleMenu}>

@@ -2,7 +2,7 @@ import React from "react";
 import pic from "../../assets/samples.png";
 import { FaStar } from "react-icons/fa";
 import { TfiArrowCircleRight } from "react-icons/tfi";
-const OrderCard = () => {
+const OrderCard = ({order}) => {
   return (
     <div className="w-full text-xsm3 md:text-base border-y md:border-y-2 flex flex-row py-1 md:py-4 border-red-600 gap-3 items-center">
       <div className="w-20 h-20 md:w-44 md:h-52 ">

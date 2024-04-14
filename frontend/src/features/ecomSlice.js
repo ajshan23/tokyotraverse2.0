@@ -11,34 +11,24 @@ export const ecomSlice=createSlice({
 
         loadCart:(state,action)=>{
             state.cart=action.payload
-            // console.log(state.cart);
         },
-        addTocart:(state,action)=>{
-            state.cart.push(action.payload)
-            console.log(state.cart);
-            //hit endpoint
-        },
-        setCart:(state,action)=>{
-            state.cart=[];
-        },
-        // calculateTotal:(state,action)=>{
-        //     let total;
-
-        //    for (const item in state.cart) {
-          
-        //     total+=state.cart[item].product.price
-        //    }
-        //     state.total=total;
-        // }
+        // addTocart:(state,action)=>{
+        //     state.cart.push(action.payload)
+        //     console.log(state.cart);
+        //     //hit endpoint
+        // },
+        // setCart:(state,action)=>{
+        //     state.cart=[];
+        // },
 
     }
 })
 
-export const {setUser,setAuthtoken,loadProducts,loadCart,addTocart,setCart,calculateTotal}=ecomSlice.actions
+export const {loadCart,addTocart,setCart}=ecomSlice.actions
 
 export const selectTotalCartAmount = (state) => {
     return state.cart.reduce((total, item) => {
-      return total + item.product.price
+      return total + (item.product.price*item.quantity)
     }, 0);
   };
 
