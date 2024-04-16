@@ -173,58 +173,25 @@ const removeCart = asyncHandler(async (req, res) => {
         message: "quantity decreased successfully",
         success: true,
       });
-    })
+    });
   } else {
     await Cart.findOneAndDelete({
       owner: user._id,
       product: productId,
-    }).then(()=>{
-      return res.status(201).json({
-        message:"cart removed successfully",
-        success:true
+    })
+      .then(() => {
+        return res.status(201).json({
+          message: "cart removed successfully",
+          success: true,
+        });
       })
-    }).catch(()=>{
-      return res.status(201).json({
-        message:"cart removel unsuccessfull",
-        success:false
-    })
-    })
+      .catch(() => {
+        return res.status(201).json({
+          message: "cart removel unsuccessfull",
+          success: false,
+        });
+      });
   }
-});
-
-const finalSubmit = asyncHandler(async (req, res) => {
-  const user = req?.user;
-let orderDatas=[];
-  const cartData=await Cart.find({owner:user._id})
-  for (const element of cartData) {
-    let productId= element.product
-    let quantity=element.quantity
-    let owner=user._id
-    let orderData= await Order.create({
-      product:productId,
-      quantity:quantity,
-      owner:owner
-    })
-    orderDatas.push(orderData)
-  }
-
-  await Cart.deleteMany({
-    owner:user._id
-  }).catch((err)=>{
-    console.log(err);
-    return res.json({
-      message:"unable delete",
-      success:false
-    })
-  }
-  )  
-  res.json({
-    message:"successfull",
-    success:true,
-    orderDatas
-  })
-
-
 });
 
 const addToWhishList = asyncHandler(async (req, res) => {
@@ -314,14 +281,133 @@ const getWhishList = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, data, "liked list fetched "));
 });
 
-const getOrderList=asyncHandler(async(req,res)=>{
-  const userId=req?.user._id;
-  const data=await Order.find({
-    owner:userId
-  })
+const finalSubmit = asyncHandler(async (req, res) => {
+  const user = req?.user;
+  const { address, phoneNumber, pincode } = req?.body;
+  if ([address, phoneNumber, pincode].some((fi) => fi.trim() === "")) {
+    throw new ApiError(400, "all fields required");
+  }
+  let orderDatas = [];
+  const cartData = await Cart.find({ owner: user._id });
+  for (const element of cartData) {
+    let productId = element.product;
+    let quantity = element.quantity;
+    let owner = user._id;
+    let orderData = await Order.create({
+      product: productId,
+      quantity: quantity,
+      owner: owner,
+      address: address,
+      phoneNumber: Number(phoneNumber),
+      pincode: Number(pincode),
+    });
+    orderDatas.push(orderData);
+  }
 
-  return res.status(201).json(new ApiResponse(201,data,"Order list fetched"))
-})
+  await Cart.deleteMany({
+    owner: user._id,
+  }).catch((err) => {
+    console.log(err);
+    return res.json({
+      message: "unable delete",
+      success: false,
+    });
+  });
+  res.json({
+    message: "successfull",
+    success: true,
+    orderDatas,
+  });
+});
+
+const getOrderList = asyncHandler(async (req, res) => {
+  const userId = req?.user._id;
+
+  const data = await Order.find({
+    owner: userId,
+  })
+    .populate("product")
+    .sort({ createdAt: -1 });
+
+  return res.status(201).json(new ApiResponse(201, data, "Order list fetched"));
+});
+
+const cancelOrder = asyncHandler(async (req, res) => {
+  const orderId = req?.body.orderId;
+
+  await Order.updateOne(
+    { _id: orderId },
+    { $set: { orderStatus: "cancelled" } },
+    { runValidators: true }
+  )
+    .then(() =>
+      res.json({
+        message: "order cancelled",
+        success: true,
+      })
+    )
+    .catch(() => {
+      res.json({
+        message: "order cancellation is not success",
+        success: false,
+      });
+    });
+});
+
+const getAllOrder = asyncHandler(async (req, res) => {
+  await Order.find({}).populate("product owner")
+    .then((response) => res.json(new ApiResponse(201, response, "Order list fetched")))
+    .catch((err) => {
+      console.log(err);
+      res.json({
+        message: "order fetching cancelled",
+        success: false,
+      });
+    });
+});
+
+const updateOrder = asyncHandler(async (req, res) => {
+  const { updateCategory, orderId } = req?.body;
+  await Order.findOneAndUpdate(
+    { _id: orderId },
+    { $set: { orderStatus: updateCategory } },
+    { runValidators: true }
+  )
+    .then(() =>
+      res.json({
+        message: "Order updated successfully",
+        success: true,
+      })
+    )
+    .catch(() =>
+      res.json({
+        message: "order Updation got cancelled",
+        success: false,
+      })
+    );
+});
+
+const blockOrder = asyncHandler(async (req, res) => {
+  const { orderId } = req?.body;
+  await Order.findOneAndUpdate(
+    { _id: orderId },
+    { $set: { orderStatus: "blocked" } },
+    { runValidators: true }
+  )
+    .then(() =>
+      res.json({
+        message: "Order updated successfully",
+        success: true,
+      })
+    )
+    .catch(() =>
+      res.json({
+        message: "order Updation got cancelled",
+        success: false,
+      })
+    );
+});
+
 
 export {
   registerUser,
@@ -335,5 +421,9 @@ export {
   removeFromWhishList,
   checkWishlist,
   getWhishList,
-  getOrderList
+  getOrderList,
+  cancelOrder,
+  getAllOrder,
+  updateOrder,
+  blockOrder
 };

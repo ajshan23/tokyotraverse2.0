@@ -18,11 +18,24 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus:{
         type:String,
-        enum: ['placed', 'processing', 'shipped', 'delivered', 'cancelled'],
-        default: 'placed',
+        enum: [ 'processing', 'shipped', 'delivered', 'cancelled','blocked'],
+        default: 'processing',
+    },
+    address:{
+      type:String,
+      required:true
+    },
+    phoneNumber:{
+      type:Number,
+      required:true,
+    },
+    pincode:{
+      type:Number,
+      required:true,
     }
   },
   { timestamps: true }
 );
 
 export const Order=mongoose.model("Order",orderSchema)
+

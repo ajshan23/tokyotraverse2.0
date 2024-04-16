@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCart, loadCart, loginUser, logoutUser, registerUser, removeCart ,finalSubmit, addToWhishList, removeFromWhishList, checkWishlist, getWhishList, getOrderList} from "../controllers/user.controller.js";
+import { createCart, loadCart, loginUser, logoutUser, registerUser, removeCart ,finalSubmit, addToWhishList, removeFromWhishList, checkWishlist, getWhishList, getOrderList, cancelOrder} from "../controllers/user.controller.js";
 import {  getAllProducts, getFandom, getLatestProducts, getProductByCategroy, getRelated, getfeatured, searchProducts } from "../controllers/product.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -30,5 +30,6 @@ router.route("/loadcart").post(verifyJWT,loadCart)
 router.route("/createcart").post(verifyJWT,createCart)
 router.route("/removecart").post(verifyJWT,removeCart)
 router.route("/getorderlist").post(verifyJWT,getOrderList)
+router.route("/cancelorder").post(verifyJWT,cancelOrder)
 
 export default router;

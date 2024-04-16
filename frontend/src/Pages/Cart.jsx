@@ -49,34 +49,44 @@ const Cart = () => {
     }
     setShowModel(true);
   };
-  const handleConfirm = async (e,close) => {
-    e.preventDefault()
+  const handleConfirm = async (e, close) => {
+    e.preventDefault();
     if (address.trim() === "" || phone.trim() === "" || pincode.trim() === "") {
       toast.error("All fields are required");
       return null;
     }
 
-    if (pincode.length>6) {
-      toast.error("Enter valid pincode")
-      setPincode("")
+    if (pincode.length > 6) {
+      toast.error("Enter valid pincode");
+      setPincode("");
       return null;
     }
 
-    await axios.post("http://localhost:5000/api/v1/users/finalsubmit")
-      .then((response)=>{
-        if (response.data.success===true) {
-          close()
-          fetchCart()
-          toast.success("Purchase successfull")
+    await axios
+      .post("http://localhost:5000/api/v1/users/finalsubmit", {
+        address: address,
+        phoneNumber: phone,
+        pincode: pincode,
+      })
+      .then((response) => {
+        if (response.data.success === true) {
+          close();
+          fetchCart();
+          setAddress("");
+          setPhone("");
+          setPincode("");
+          toast.success("Purchase successfull");
         }
       })
       .catch((err) => {
         console.log(err);
-        close()
+        close();
         toast.error("unsuccessfull submition");
+        setAddress("");
+        setPhone("");
+        setPincode("");
         return;
       });
-      
   };
 
   const handleRemove = async (item) => {
@@ -242,47 +252,73 @@ const Cart = () => {
               <div>₹{cartTotalPrice}</div>
             </div>
 
-            <Popup
-              trigger={
-                <button className="px-10 md:px-24 mt-3 py-2 bg-[#F01F26] text-white font-lexend font-bold text-xl rounded-lg my-3">
-                  Proceed to Buy
-                </button>
-              }
-              modal
-              nested
-            >
-              {(close) => (
-                <div className="border-red-600 border-2 flex flex-row   p-4 w-full justify-between">
-                  <div className=" flex flex-col  gap-8 ">
-                  <div className="text-lg md:text-2xl">Add address</div>
-                  <form onSubmit={(e)=>handleConfirm(e,close)}  className="flex flex-col gap-4">
-                    
-                    <div className="flex flex-col md:flex-row gap-1 md:gap-3">
-                      <div className="font-bold font-mono">Phone:</div>
-                      <input name="phone" type="tel" value={phone} onChange={(e)=>setPhone(e.target.value)} />
+            {cart.length === 0 ? (
+              <button className="px-10 md:px-24 mt-3 py-2 bg-[#F01F26] text-white font-lexend font-bold text-xl rounded-lg my-3" onClick={()=>toast.error("cart is empty")}>
+                Proceed to Buy
+              </button>
+            ) : (
+              <Popup
+                trigger={
+                  <button className="px-10 md:px-24 mt-3 py-2 bg-[#F01F26] text-white font-lexend font-bold text-xl rounded-lg my-3">
+                    Proceed to Buy
+                  </button>
+                }
+                modal
+                nested
+              >
+                {(close) => (
+                  <div className="border-red-600 border-2 flex flex-row   p-4 w-full justify-between">
+                    <div className=" flex flex-col  gap-8 ">
+                      <div className="text-lg md:text-2xl">Add address</div>
+                      <form
+                        onSubmit={(e) => handleConfirm(e, close)}
+                        className="flex flex-col gap-4"
+                      >
+                        <div className="flex flex-col md:flex-row gap-1 md:gap-3">
+                          <div className="font-bold font-mono">Phone:</div>
+                          <input
+                            name="phone"
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-col md:flex-row gap-1 md:gap-3">
+                          <div className="font-bold font-mono">
+                            Place Address:
+                          </div>
+                          <textarea
+                            name="address"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex flex-col md:flex-row gap-1 md:gap-3">
+                          <div className="font-bold font-mono">PinCode:</div>
+                          <input
+                            name="phone"
+                            type="number"
+                            value={pincode}
+                            maxLength={6}
+                            onChange={(e) => {
+                              setPincode(e.target.value);
+                            }}
+                          />
+                        </div>
+                        <div className="px-5 py-2 w-fit rounded-lg bg-red-600 text-white">
+                          <button onClick={(e) => handleConfirm(e, close)}>
+                            Confirm order
+                          </button>
+                        </div>
+                      </form>
                     </div>
-                    <div className="flex flex-col md:flex-row gap-1 md:gap-3">
-                      <div className="font-bold font-mono">Place Address:</div>
-                      <textarea name="address" value={address} onChange={(e)=>setAddress(e.target.value)} />
+                    <div onClick={() => close()} className="cursor-pointer">
+                      X
                     </div>
-                    <div className="flex flex-col md:flex-row gap-1 md:gap-3">
-                      <div className="font-bold font-mono">PinCode:</div>
-                      <input name="phone" type="number" value={pincode} maxLength={6} onChange={(e)=>{
-                         setPincode(e.target.value)
-                      }}/>
-                    </div>
-                    <div className="px-5 py-2 w-fit rounded-lg bg-red-600 text-white">
-                          <button onClick={(e)=>handleConfirm(e,close)}>Confirm order</button>
-                    </div>
-                    
-                  </form>
-                  
-                </div>
-                <div onClick={()=>close()} className="cursor-pointer">X</div>
-                </div>
-                
-              )}
-            </Popup>
+                  </div>
+                )}
+              </Popup>
+            )}
           </div>
         </div>
       </div>

@@ -8,20 +8,25 @@ const Orders = () => {
   const [selected, setSelected] = useState("all");
 
   const [orderData, setOrderData] = useState([]);
+  const [changed,setChanged]=useState()
 
   const fetchData = async () => {
     await axios
       .post("http://localhost:5000/api/v1/users/getorderlist")
       .then((response) => {
-        setOrderData(response.data.data);
-        console.log(response.data.data);
+        let aj=[]
+        let sh=[]
+       response.data.data.forEach(element => {
+        element.orderStatus==="cancelled" || element.orderStatus==="delivered" || element.orderStatus==="blocked" ? aj.push(element):sh.push(element)
+       });
+       setOrderData([...sh,...aj])
       })
       .catch((err) => toast.error("Error occured, please refresh"));
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+   fetchData()
+  }, [changed,selected]);
   return (
     <div className="w-full py-10  flex flex-col justify-center items-center px-2 md:px-[120px] gap-10">
       <div className="text-center flex flex-col gap-3">
@@ -41,11 +46,11 @@ const Orders = () => {
             </div>
             <div
               className={`px-6 py-.5  border border-red-600 rounded-sm flex ${
-                selected === "ordered" && "bg-red-600 text-white"
+                selected === "processing" && "bg-red-600 text-white"
               } justify-center cursor-pointer items-center`}
-              onClick={() => setSelected("ordered")}
+              onClick={() => setSelected("processing")}
             >
-              Ordered
+              Processing
             </div>
             <div
               className={`px-6 py-.5  border border-red-600 rounded-sm flex ${
@@ -77,18 +82,12 @@ const Orders = () => {
         </div>
       </div>
       <div className="w-full flex flex-col gap-2 md:gap-5">
-        {/* {orderData &&
+        {orderData &&
           orderData.map((order,index) => {
-            <OrderCard key={index} order={order} />
+           return order.orderStatus==="cancelled" || order.orderStatus==="delivered" || order.orderStatus==="blocked" ?<Orderdesignated order={order} key={index}/>:<OrderCard key={index} order={order} setChanged={setChanged}/>
           })}
 
-         */}
-        {
-          Array(1,2,3,4).map((d,i)=>{
-            // <div key={i}>{d}</div>
-            <Orderdesignated />
-          })
-        }
+        
       </div>
     </div>
   );

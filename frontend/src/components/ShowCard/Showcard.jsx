@@ -7,7 +7,7 @@ const Showcard = ({product}) => {
       <div className="relative group w-fit h-fit overflow-hidden">
         <img src={product.image} alt="" className="w-20 h-24  md:w-[236px] md:h-[276px] flex  " />
         <div className="absolute bottom-0 w-full h-6 md:h-11 text-xsm3 md:text-lg font-medium font-lexend flex justify-center items-center bg-red-600 text-white translate-y-full group-hover:translate-y-0 transition-all ease-in-out duration-300 cursor-pointer">
-          Add To Bag
+          Check It Out
         </div>
       </div>
       <div className="w-fit h-full flex flex-col md:gap-2 py-2 px-4 ">
