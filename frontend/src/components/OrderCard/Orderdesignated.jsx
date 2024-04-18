@@ -29,8 +29,7 @@ const Orderdesignated = ({ order }) => {
         </div>
       </div>
       <div className="flex w-fit h-fit ">
-        <Link  to={`/product/${order.product.productcode}`}
-                      state={order.product}>
+        <Link  to={`/product/${order.product.productcode}`}>
           <TfiArrowCircleRight size={16} />
         </Link>
       </div>

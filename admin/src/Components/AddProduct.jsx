@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import upload_area from "../assets/upload_area.svg";
 import { PacmanLoader } from "react-spinners";
 import axios from "axios";
+import toast from "react-hot-toast"
 const AddProduct = () => {
   const [image, setImage] = useState(false);
   const [animate, setAnimate] = useState(false);
@@ -10,6 +11,7 @@ const AddProduct = () => {
     category: "naruto",
     price: "",
     product_code: "",
+    stock:0,
   });
 
   const imageHandler = (e) => {
@@ -47,6 +49,7 @@ const AddProduct = () => {
     formData.append("price", product.price);
     formData.append("category", product.category);
     formData.append("name", product.name);
+    formData.append("stock", product.stock);
 
     await axios
       .post("http://localhost:5000/api/v1/admin/addproduct", formData)
@@ -56,24 +59,26 @@ const AddProduct = () => {
       .catch((error) => {
         console.log(error);
         if (error.response.status === 400) {
-          alert("product allready exists on this product code");
+          toast.error("product allready exists on this product code");
           setAnimate(false);
           setProduct({
             name: "",
             category: "naruto",
             price: "",
             product_code: "",
+            stock:0,
           });
           return null;
         }
         if (error.response.status === 401) {
-          alert("product creation failed");
+          toast.error("product creation failed");
           setAnimate(false);
           setProduct({
             name: "",
             category: "naruto",
             price: "",
             product_code: "",
+            stock:0,
           });
           return null;
         }
@@ -85,8 +90,9 @@ const AddProduct = () => {
       price: "",
       product_code: "",
     });
-    if (responseData.success) {
-      alert("product added successfully");
+    console.log(responseData);
+    if (responseData.success==true) {
+      toast.success("product added successfully");
     }
   };
   return (
@@ -132,6 +138,19 @@ const AddProduct = () => {
                       name="product_code"
                       placeholder="Type here"
                       value={product.product_code}
+                      onChange={changeHandler}
+                      className="h-full w-full border-none outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="itemfield">
+                  <p>Stock Available</p>
+                  <div className="border-[#7b7b7b] border-2 px-4 w-fit py-1.5 rounded-md  ">
+                    <input
+                      type="number"
+                      name="stock"
+                      placeholder="Type here"
+                      value={product.stock}
                       onChange={changeHandler}
                       className="h-full w-full border-none outline-none"
                     />

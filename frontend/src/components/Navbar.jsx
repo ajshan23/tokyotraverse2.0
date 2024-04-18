@@ -6,6 +6,7 @@ import { HashLink as HLink } from 'react-router-hash-link';
 import {useDispatch, useSelector} from "react-redux"
 import { loadCart } from '../features/ecomSlice';
 import axios from "axios"
+import toast from "react-hot-toast"
 const Navbar = () => {
 
   axios.defaults.withCredentials=true;

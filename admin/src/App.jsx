@@ -5,6 +5,7 @@ import ListProduct from './Components/ListProduct'
 import AddProduct from './Components/AddProduct'
 import OrderList from './Components/OrderList'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 const App = () => {
   return (
     <div className='app' style={{ height: '100vh', overflow: 'hidden' }}>
@@ -18,7 +19,9 @@ const App = () => {
         <Route path='/listproduct' element={<ListProduct/>} />
         <Route path='/listorders' element={<OrderList/>} />
       </Routes>
+      <Toaster/>
      </div>
+   
      
      </BrowserRouter>
     </div>

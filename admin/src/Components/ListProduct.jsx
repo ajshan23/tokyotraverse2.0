@@ -19,9 +19,7 @@ const ListProduct = () => {
     setLoading(true);
 
     await axios
-      .post("http://localhost:5000/api/v1/admin/removeproductbyid", {
-        id: productId,
-      })
+      .post(`http://localhost:5000/api/v1/admin/removeproductbyid/${productId}`)
       .then((res) => {
         console.log(res);
         setLoading(false);
@@ -43,7 +41,7 @@ const ListProduct = () => {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                No.
+                Product Code
               </th>
               <th className="px-16 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Product IMage
@@ -52,7 +50,7 @@ const ListProduct = () => {
                 Title
               </th>
               <th className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Product Code
+                Stocks
               </th>
               <th className="px-10 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Price
@@ -69,7 +67,7 @@ const ListProduct = () => {
             {allproducts &&
               allproducts.map((product, index) => (
                 <tr className="text-center" key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">{index + 1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product?.productcode}</td>
                   <td className="px-16 py-4 whitespace-nowrap">
                     <img src={product?.image} alt="" />
                   </td>
@@ -77,7 +75,7 @@ const ListProduct = () => {
                     {product?.name}
                   </td>
                   <td className="px-10 py-4 whitespace-nowrap">
-                    {product?.productcode}
+                    {product?.stock}
                   </td>
                   <td className="px-10 py-4 whitespace-nowrap">
                     {product?.price}$

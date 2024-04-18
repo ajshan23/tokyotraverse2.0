@@ -195,7 +195,7 @@ const removeCart = asyncHandler(async (req, res) => {
 });
 
 const addToWhishList = asyncHandler(async (req, res) => {
-  const productId = req.body.productId;
+  const {productId} = req.params;
   const userId = req.user._id;
   console.log(req.user._id);
 
@@ -231,7 +231,7 @@ const addToWhishList = asyncHandler(async (req, res) => {
 });
 
 const removeFromWhishList = asyncHandler(async (req, res) => {
-  const productId = req.body.productId;
+  const {productId} = req.params
   const userId = req.user._id;
   await WhishList.findOneAndDelete({
     productId: productId,
@@ -252,7 +252,7 @@ const removeFromWhishList = asyncHandler(async (req, res) => {
 });
 
 const checkWishlist = asyncHandler(async (req, res) => {
-  const productId = req.body.productId;
+  const {productId} = req.params
   const userId = req.user._id;
   const check = await WhishList.findOne({
     productId: productId,

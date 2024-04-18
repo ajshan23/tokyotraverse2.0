@@ -1,4 +1,5 @@
 import { WhishList } from "../models/WhishList.model.js";
+import { Cart } from "../models/cart.model.js";
 import { Product } from "../models/product.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -7,10 +8,10 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import NodeCache from "node-cache";
 const nodeCache = new NodeCache();
 const createProduct = asyncHandler(async (req, res) => {
-  // console.log("hitted create product")
-  const { productcode, name, category, price } = req.body;
+  console.log("hitted create product")
+  const { productcode, name, category, price,stock } = req.body;
   if (
-    [productcode, name, category, price].some((field) => field.trim() === "")
+    [productcode, name, category, price,stock].some((field) => field.trim() === "")
   ) {
     throw new ApiError(399, "all details are required.");
   }
@@ -33,8 +34,9 @@ const createProduct = asyncHandler(async (req, res) => {
   if (!productImageLocalPath) {
     throw new ApiError(400, "product image missing");
   }
+  console.log(productImageLocalPath);
   const productImage = await uploadOnCloudinary(productImageLocalPath);
-  console.log(productImage)
+  // console.log(productImage)
   if (!productImage.url) {
     throw new ApiError(
       400,
@@ -48,7 +50,8 @@ const createProduct = asyncHandler(async (req, res) => {
     category,
     price,
     image: productImage.url,
-  });
+    stock:stock,
+  }).catch(()=>deleteOnCloudinary(productImageLocalPath))
   if (!product) {
     throw new ApiError(401, "product creation failed");
   }
@@ -81,7 +84,8 @@ const getAllProducts = asyncHandler(async (req, res) => {
 });
 
 const removeProductByid = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params;
+  
   if (!id) {
     throw new ApiError(400, "id not found");
   }
@@ -123,6 +127,21 @@ const getLatestProducts = asyncHandler(async (req, res) => {
     });
   }
 });
+
+const getProductByid=asyncHandler(async (req, res) => {
+  const { productCode } = req.params;
+  if (!productCode) {
+    throw new ApiError(400, "id not found");
+  }
+  const product = await Product.findOne({productcode: productCode});
+  if (!product) {
+    throw new ApiError(400, "product not found");
+  }
+  return res.status(201).json({
+    success:true,
+    product: product,
+  });
+})
 
 const getProductByCategroy = asyncHandler(async (req, res) => {
   const { category } = req?.body;
@@ -218,8 +237,22 @@ const getfeatured = asyncHandler(async (req, res) => {
 });
 
 
+ const stockUpdate=asyncHandler(async(req,res)=>{
+  const {productId,stockQuntity}=req.params;
+  const stock = parseInt(stockQuntity)
 
-export {
+  await Product.findByIdAndUpdate(productId,{$inc:{stock:stock}},{new:true})
+    .then((response)=>res.status(200).json(new ApiResponse(200,{response},"Product updated successfully")))
+    .catch((err)=>{
+      console.log(err);
+      res.status(400).json({success:false,message:"Product update unsuccessful"})
+    }) 
+})
+
+
+
+
+export {  
   createProduct,
   getAllProducts,
   removeProductByid,
@@ -228,5 +261,8 @@ export {
   searchProducts,
   getRelated,
   getFandom,
-  getfeatured
+  getfeatured,
+  stockUpdate,
+  getProductByid
+ 
 };

@@ -52,7 +52,7 @@ const ListSelectedProducts = (props) => {
         {products &&
           products.map((product, index) => (
             <div key={index}>
-              <Link to={`/product/${product.productcode}`} state={product}>
+              <Link to={`/product/${product.productcode}`}>
                 <Showcard product={product} />
               </Link>
             </div>
