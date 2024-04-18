@@ -3,8 +3,11 @@ import OrderCard from "../components/OrderCard/OrderCard";
 import Orderdesignated from "../components/OrderCard/Orderdesignated";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Orders = () => {
+  const isLogined=localStorage.getItem("isLogined");
+  const navigate=useNavigate()
   const [selected, setSelected] = useState("all");
 
   const [orderData, setOrderData] = useState([]);
@@ -25,8 +28,13 @@ const Orders = () => {
   };
 
   useEffect(() => {
-   fetchData()
-  }, [changed,selected]);
+    if (isLogined) {
+      fetchData()
+    } else {
+      navigate("/")
+    }
+   
+  }, [changed,selected,isLogined]);
   return (
     <div className="w-full py-10  flex flex-col justify-center items-center px-2 md:px-[120px] gap-10">
       <div className="text-center flex flex-col gap-3">

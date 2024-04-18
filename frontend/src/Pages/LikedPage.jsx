@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import Showcard from "../components/ShowCard/Showcard.jsx";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 const LikedPage = () => {
+  const isLogined=localStorage.getItem("accessToken");
+  const navigate=useNavigate()
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +29,12 @@ const LikedPage = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    if (isLogined) {
+      fetchData();
+    }else{
+      navigate("/")
+    }
+    
   }, []);
   return (
     <div className="py-5 md:py-14 w-full flex flex-col gap-1 justify-center items-center px-7 md:px-14">

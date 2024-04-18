@@ -22,36 +22,36 @@ const LoginSignUp = () => {
       toast.error("All fields are required");
       return null;
     }
-    let responseData;
     setLoading(true);
     
     await axios.post("http://localhost:5000/api/v1/users/login",{ password: password, email: email })
       .then((response) =>{
-        // console.log(response.data);
-        (responseData = response.data)
+       
+        if (response.data.success) {
+          console.log(response.data);
+          localStorage.setItem("accessToken", response.data.data.accessToken);
+          navigate("/")
+        } else {
+          if (response.data.statusCode === 400) {
+            toast.error("wrong email or password");
+          }
+          toast.error(response.data.error);
+        }
       })
       .catch((err) => {
         alert("Wrong email or password");
         setLoading(false);
-      });
-    setLoading(false);
+      }).finally(()=>{
+        setPassword("");
+        setCpass("");
+        setEmail("");
+        setUsername("");
+        setLoading(false);
+      })
+    
 
-    if (responseData.success) {
-      console.log(responseData);
-      localStorage.setItem("accessToken", responseData.data.accessToken);
-
-      // window.location.replace("/");
-      navigate("/")
-    } else {
-      if (responseData.statusCode === 400) {
-        toast.error("wrong email or password");
-      }
-      toast.error(responseData.error);
-    }
-    setPassword("");
-    setCpass("");
-    setEmail("");
-    setUsername("");
+    
+   
   };
   const handleSignup = async () => {
     if (
