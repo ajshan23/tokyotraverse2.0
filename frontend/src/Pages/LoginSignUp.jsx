@@ -66,35 +66,36 @@ const LoginSignUp = () => {
       setCpass("");
       return null;
     }
-    let responseData;
     setLoading(true);
     await axios.post("http://localhost:5000/api/v1/users/register",{
       username: username,
       password: password,
       email: email,
     })
-      .then((response) => (responseData = response.data))
+      .then((response) => {
+        console.log(response);
+        if (response.data.success) {
+          
+          localStorage.setItem("accessToken", response.data.data.accessToken);
+    
+          navigate("/")
+        } else {
+          alert(response.data.error);
+        }
+      })
       .catch((err) => {
         if (err.statuscode === 409) {
           alert("username or password already exists");
         }
         alert("username or password already exists");
         setLoading(false);
-      });
-    setLoading(false);
-    if (responseData.success) {
-      console.log(responseData);
-      localStorage.setItem("accessToken", responseData.data.accessToken);
-
-      // window.location.replace("/");
-      navigate("/")
-    } else {
-      alert(responseData.error);
-    }
-    setPassword("");
-    setCpass("");
-    setEmail("");
-    setUsername("");
+      }).finally(()=>{
+        setPassword("");
+        setCpass("");
+        setEmail("");
+        setUsername("");
+        setLoading(false);  
+      })
   };
   useEffect(() => {
     let check = localStorage.getItem("accessToken");

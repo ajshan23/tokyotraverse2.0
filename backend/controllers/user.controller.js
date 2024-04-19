@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { WhishList } from "../models/WhishList.model.js";
 import { Order } from "../models/order.model.js";
+import mongoose from "mongoose";
+import { Product } from "../models/product.model.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req?.body;
@@ -126,27 +128,46 @@ const createCart = asyncHandler(async (req, res) => {
     product: productId,
     owner: user._id,
   });
-
+  
+  const product = await Product.findOne({_id:productId});
   if (check) {
-    check.quantity += quantity;
-    await check.save();
-
-    return res.status(201).json({
-      message: "updated successfull",
-      success: true,
-    });
-  } else {
-    const data = await Cart.create({
-      product: productId,
-      owner: user._id,
-      quantity: quantity,
-    });
-
-    if (!data) {
-      throw new ApiError(500, "cart creation failed");
+    if (product.stock >= (check.quantity+quantity)) {
+      check.quantity += quantity;
+      await check.save();
+      return res.status(201).json({
+        message: "updated successfull",
+        success: true,
+      });
+    }
+    else{
+      return res.status(400).json({
+        message: "out of stock",
+        success: false,
+      });
     }
 
-    return res.json(new ApiResponse(201, data, "cart created successfully"));
+   
+  } else {
+    if (product.stock>=quantity) {
+      const data = await Cart.create({
+        product: productId,
+        owner: user._id,
+        quantity: quantity,
+      });
+      if (!data) {
+        throw new ApiError(500, "cart creation failed");
+      }
+  
+      return res.json(new ApiResponse(201, data, "cart created successfully"));
+    }else{
+      return res.status(400).json({
+        message: "out of stock",
+        success: false,
+      });
+    }
+   
+
+   
   }
 });
 
@@ -195,7 +216,7 @@ const removeCart = asyncHandler(async (req, res) => {
 });
 
 const addToWhishList = asyncHandler(async (req, res) => {
-  const {productId} = req.params;
+  const { productId } = req.params;
   const userId = req.user._id;
   console.log(req.user._id);
 
@@ -231,7 +252,7 @@ const addToWhishList = asyncHandler(async (req, res) => {
 });
 
 const removeFromWhishList = asyncHandler(async (req, res) => {
-  const {productId} = req.params
+  const { productId } = req.params;
   const userId = req.user._id;
   await WhishList.findOneAndDelete({
     productId: productId,
@@ -252,7 +273,7 @@ const removeFromWhishList = asyncHandler(async (req, res) => {
 });
 
 const checkWishlist = asyncHandler(async (req, res) => {
-  const {productId} = req.params
+  const { productId } = req.params;
   const userId = req.user._id;
   const check = await WhishList.findOne({
     productId: productId,
@@ -281,44 +302,124 @@ const getWhishList = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, data, "liked list fetched "));
 });
 
-const finalSubmit = asyncHandler(async (req, res) => {
-  const user = req?.user;
-  const { address, phoneNumber, pincode } = req?.body;
-  if ([address, phoneNumber, pincode].some((fi) => fi.trim() === "")) {
-    throw new ApiError(400, "all fields required");
-  }
-  let orderDatas = [];
-  const cartData = await Cart.find({ owner: user._id });
-  for (const element of cartData) {
-    let productId = element.product;
-    let quantity = element.quantity;
-    let owner = user._id;
-    let orderData = await Order.create({
-      product: productId,
-      quantity: quantity,
-      owner: owner,
-      address: address,
-      phoneNumber: Number(phoneNumber),
-      pincode: Number(pincode),
-    });
-    orderDatas.push(orderData);
-  }
+// const orderCreation = asyncHandler(async (req, res) => {
+//   const user = req?.user;
+//   const { address, phoneNumber, pincode } = req?.body;
+//   if ([address, phoneNumber, pincode].some((fi) => fi.trim() === "")) {
+//     throw new ApiError(400, "all fields required");
+//   }
+//   let orderDatas = [];
+//   const cartData = await Cart.find({ owner: user._id });
 
-  await Cart.deleteMany({
-    owner: user._id,
-  }).catch((err) => {
-    console.log(err);
-    return res.json({
-      message: "unable delete",
-      success: false,
-    });
-  });
-  res.json({
+//   if (!cartData) {
+//     throw new ApiError(400, "no cart found");
+//   }
+
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+  
+
+//   try {
+//     for (const element of cartData) {
+//       let productId = element.product;
+//       let quantity = element.quantity;
+//       let owner = user._id;
+//       await Product.updateOne(
+//         { _id: productId },
+//         { $inc: { stock: -quantity } },
+//         { runValidators: true, session }
+//       );
+//       let orderData = await Order.create(
+//         [
+//           {
+//             product: productId,
+//             quantity: quantity,
+//             owner: owner,
+//             address: address,
+//             phoneNumber: Number.parseInt(phoneNumber),
+//             pincode: Number.parseInt(pincode),
+//           },
+//         ],
+//         { session }
+//       );
+//       orderDatas.push(orderData);
+//     }
+//     await Cart.deleteMany({ owner: user._id }, { session });
+//     await session.commitTransaction();
+//     session.endSession();
+//     res.json({
+//       message: "successfull",
+//       success: true,
+//       orderDatas,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     await session.abortTransaction();
+//     session.endSession();
+//     res.status(500).json({
+//       message: "something went wrong",
+//       success: false,
+//     });
+//   }
+// });
+
+
+const processOrder=asyncHandler(async(req,res)=>{
+  const userId=req?.user?._id
+ 
+  if (!userId) {
+    throw new ApiError(400, "invalid user");
+  }
+  let errorData=[];
+
+  const session=await mongoose.startSession();
+  
+  session.startTransaction();
+  try {
+    const cartItems=await Cart.find({owner:userId}).session(session)
+    
+    for(const item of cartItems){
+      const product=await Product.findById(item.product).session(session);
+      const newStock=product.stock-item.quantity;
+
+      if (newStock<0) {
+        errorData.push(`Insufficient stock for product ${product.name}`)
+        throw new Error(`Insufficient stock for product ${product.name}`)
+      }
+      await Product.findByIdAndUpdate(item.product,{stock:newStock}).session(session);
+      const order= new Order({
+        product:item.product,
+        quantity:item.quantity,
+        owner:userId,
+        address:req.body.address,
+        phoneNumber:req.body.phoneNumber,
+        pincode:req.body.pincode,
+      });
+      await order.save({session});
+    }
+    await Cart.deleteMany({owner:userId}).session(session);
+
+   await session.commitTransaction();
+   session.endSession();  
+   console.log("Order processed successfully");
+   res.json({
     message: "successfull",
     success: true,
-    orderDatas,
   });
-});
+
+  } catch (error) {
+
+    await session.abortTransaction();
+    session.endSession();
+    res.json({
+      message: "unsuccessful",
+      success: false,
+      data:errorData
+    });
+    console.error('Transaction aborted', error );
+  }
+})
+
 
 const getOrderList = asyncHandler(async (req, res) => {
   const userId = req?.user._id;
@@ -355,8 +456,11 @@ const cancelOrder = asyncHandler(async (req, res) => {
 });
 
 const getAllOrder = asyncHandler(async (req, res) => {
-  await Order.find({}).populate("product owner")
-    .then((response) => res.json(new ApiResponse(201, response, "Order list fetched")))
+  await Order.find({})
+    .populate("product owner")
+    .then((response) =>
+      res.json(new ApiResponse(201, response, "Order list fetched"))
+    )
     .catch((err) => {
       console.log(err);
       res.json({
@@ -408,7 +512,6 @@ const blockOrder = asyncHandler(async (req, res) => {
     );
 });
 
-
 export {
   registerUser,
   loginUser,
@@ -416,7 +519,7 @@ export {
   loadCart,
   createCart,
   removeCart,
-  finalSubmit,
+ 
   addToWhishList,
   removeFromWhishList,
   checkWishlist,
@@ -425,5 +528,6 @@ export {
   cancelOrder,
   getAllOrder,
   updateOrder,
-  blockOrder
+  blockOrder,
+  processOrder
 };

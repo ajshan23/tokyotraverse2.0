@@ -32,11 +32,14 @@ const productSchema = new mongoose.Schema(
     stock:{
       type:Number,
       required:true,
-      defualt:0
+      defualt:0,
+      min:0,
     }
   },
   { timestamps: true }
 );
+
+
 
 productSchema.plugin(mongooseAggregatePaginate);
 

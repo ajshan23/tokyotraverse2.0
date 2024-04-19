@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCart, loadCart, loginUser, logoutUser, registerUser, removeCart ,finalSubmit, addToWhishList, removeFromWhishList, checkWishlist, getWhishList, getOrderList, cancelOrder} from "../controllers/user.controller.js";
+import { createCart, loadCart, loginUser, logoutUser, registerUser, removeCart , addToWhishList, removeFromWhishList, checkWishlist, getWhishList, getOrderList, cancelOrder, processOrder} from "../controllers/user.controller.js";
 import {  getAllProducts, getFandom, getLatestProducts, getProductByCategroy, getProductByid, getRelated, getfeatured, searchProducts } from "../controllers/product.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -14,7 +14,8 @@ router.route("/relatedproducts").post(getRelated)
 
 
 
-router.route("/finalsubmit").post(verifyJWT,finalSubmit)
+
+router.route("/finalsubmit").post(verifyJWT,processOrder)
 
 
 router.route("/getlatestproduct").post(getLatestProducts)

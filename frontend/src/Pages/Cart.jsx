@@ -69,6 +69,7 @@ const Cart = () => {
         pincode: pincode,
       })
       .then((response) => {
+        console.log(response);
         if (response.data.success === true) {
           close();
           fetchCart();
@@ -76,6 +77,18 @@ const Cart = () => {
           setPhone("");
           setPincode("");
           toast.success("Purchase successfull");
+        }
+        if (response.data.success===false) {
+          close();
+          fetchCart();
+          setAddress("");
+          setPhone("");
+          setPincode("");
+          if (response.data.data) {
+            toast.error(response.data.data.join(","));
+          } else {
+            toast.error("Purchase unsuccessfull")
+          }
         }
       })
       .catch((err) => {
@@ -138,11 +151,25 @@ const Cart = () => {
             productId: "",
             state: false,
           });
+
+          if (response.data.statuscode === 400) {
+            toast.error("Out of stock");
+          }
         } else {
           toast.error("Error occured, please refresh the page");
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        if (err.response.data.success===false) {
+          toast.error(err.response.data.message)
+          setLoading({
+            productId: "",
+            state: false,
+          })
+        }
+        
+
+      });
   };
 
   const fetchCart = async () => {
@@ -253,7 +280,10 @@ const Cart = () => {
             </div>
 
             {cart.length === 0 ? (
-              <button className="px-10 md:px-24 mt-3 py-2 bg-[#F01F26] text-white font-lexend font-bold text-xl rounded-lg my-3" onClick={()=>toast.error("cart is empty")}>
+              <button
+                className="px-10 md:px-24 mt-3 py-2 bg-[#F01F26] text-white font-lexend font-bold text-xl rounded-lg my-3"
+                onClick={() => toast.error("cart is empty")}
+              >
                 Proceed to Buy
               </button>
             ) : (
